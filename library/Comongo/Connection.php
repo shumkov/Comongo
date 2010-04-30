@@ -5,6 +5,7 @@ class Comongo_Connection
     const DEFAULT_NAME = 'default';
     const DEFAULT_HOST = '127.0.0.1';
     const DEFAILT_PORT = 27017;
+	const DEFAULT_DATABASE = 'admin';
 
     /**
      * @var Mongo
@@ -13,6 +14,8 @@ class Comongo_Connection
 
     protected $_isConnected = false;
 
+	protected static $_databases = array();
+
     protected $_options = array(
         'name'       => self::DEFAULT_NAME,
         'servers'    => array(
@@ -20,7 +23,7 @@ class Comongo_Connection
         ),
         'username'   => null,
         'password'   => null,
-        'database'   => null,
+        'database'   => self::DEFAULT_DATABASE,
         'connect'    => true,
         'persistent' => null,
         'timeout'    => null,
@@ -86,6 +89,11 @@ class Comongo_Connection
 
         Comongo_Connection_Manager::setConnection($this);
     }
+
+	public function getMongo()
+	{
+		return $this->_mongo;
+	}
 
     /**
      * Set options array
@@ -158,9 +166,9 @@ class Comongo_Connection
         return $this->_options['name'];
     }
 
-	public function getMongo()
+	public function __toString()
 	{
-		return $this->_mongo;
+		return $this->getName();
 	}
 
     public function connect()
@@ -193,6 +201,31 @@ class Comongo_Connection
     {
         return $this->_isConnected;
     }
+
+	public function getDatabase($name = null)
+	{
+		if (null === $name) {
+			$name = $this->_options['database'];
+		}
+
+		// TODO: Если создать через конструктор то в кеш не попадет, возможно это не круто.
+		if (!isset(self::$_databases[$name])) {
+			$this->_databases[$name] = new Comongo_Database($this, $name);
+		}
+
+		return $this->_databases[$name];
+	}
+	
+
+	public function __get($name)
+	{
+		return $this->getDatabase($name);
+	}
+
+	public function getDatabases()
+	{
+		
+	}
 
     public static function parseConnectionString($connectionString)
     {

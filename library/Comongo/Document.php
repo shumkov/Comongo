@@ -9,9 +9,9 @@ class Comongo_Document
 
 	protected $_attributes = array();
 
-	public function __construct()
+	public function __construct(Comongo_Collection $collection)
 	{
-		
+		$this->_collection = $collection;
 	}
 }
 
